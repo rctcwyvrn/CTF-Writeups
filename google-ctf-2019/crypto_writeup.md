@@ -111,26 +111,26 @@ y1 = c0 + c1 * x1 + c2 * x1^2^ + c3 * x1^3^ + c4 * x1^4^
 y2 = c0 + c1 * x2 + c2 * x2^2^ + c3 * x2^3^ + c4 * x2^4^   
 y3 = c0 + c1 * x3 + c2 * x3^2^ + c3 * x3^3^ + c4 * x3^4^   
 
-Now into a matrix, A=
+Now into a matrix, A=  
 |1 , x1 , x1^2^ , x1^3^ , x1^4^ |   
 |1 , x2 , x2^2^ , x2^3^ , x2^4^ |    
 |1 , x3 , x3^2^ , x3^3^ , x3^4^ |   
 |1 , 0 , 0 , 0 , 0 |  
 
-The goal vector, v=
+The goal vector, v=  
 |y1|  
 |y2|  
 |y3|  
 |c0|  
 
-So given this we expect that the CVP will find x=
+So given this we expect that the CVP will find x=  
 |c0|  
 |c1|  
 |c2|  
 |c3|  
 |c4|  
 
-and return us a vector that is close to (and hopefully close enough so that c0 will be valid)
+and return us a vector that is close to (and hopefully close enough so that c0 will be valid)  
 |y1|  
 |y2|  
 |y3|  
