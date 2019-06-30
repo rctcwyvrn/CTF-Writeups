@@ -144,11 +144,7 @@ My code is available, but I would really not recommend comparing your answer to 
 
 Challenge 7 AES in ECB mode
 ---
-Basically just "do you know how to use openSSL". For me the answer was no but a little bit of googling made it work out
-
-openssl aes-128-ecb -d -a -in c7.txt -out out.txt.new -K "59454c4c4f57205355424d4152494e45" 
-
-There's probably a way to do it without having to convert the key to hex first but it only takes a minute to type in python so why not?
+I'm stupid and didn't read the instructions, do this in code because you'll need it alot later. I used pycrpyto
 
 Challenge 8 Detecting AES in ECB mode
 ---
