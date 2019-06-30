@@ -471,9 +471,14 @@ Set 5 Diffie Hellman and friends
 
 I went through these challenges super quick, and most don't really need any sort of hints or explanation so I'm gonna do them rapid fire
 
-Challenge 33: Just follow the instructions
-Challenge 34: Do the math, think about what each side is going to generate their secret to be
-Challenge 35: Again, do the math and figure out what the S is (or could be). Remember as the man in the middle you can send _anything_
-Challenge 36: Just follow the instructions
-Challenge 36: I don't know what they meant by &c either, maybe just a constant times n? You get the idea by now
-Challenge 37: This one was weird, just a brute force attack using common words
+Challenge 33: Just follow the instructions  
+
+Challenge 34: Do the math, think about what each side is going to generate their secret to be  
+
+Challenge 35: Again, do the math and figure out what the S is (or could be). Remember as the man in the middle you can send _anything_  
+
+Challenge 36: Just follow the instructions. If you have no idea how to setup a login server like me then you want to use socketserver, look at my srp_server.py for details  
+
+Challenge 36: I don't know what they meant by &c either, maybe just a constant times n? You get the idea by now  
+
+Challenge 37: This one was weird, just a brute force attack using common words  
