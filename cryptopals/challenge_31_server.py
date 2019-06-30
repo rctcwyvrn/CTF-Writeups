@@ -1,6 +1,5 @@
 #Seperate one because I don't know how to web, code taken from https://github.com/akalin/cryptopals-python3/blob/master/challenge31.py and https://github.com/akalin/cryptopals-python3/blob/master/challenge31_server.py
 from os import urandom
-
 import codecs, set_1
 #import set_4
 import sha1
