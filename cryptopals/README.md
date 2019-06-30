@@ -358,8 +358,8 @@ The cloning part is simple, just make a constructor that takes a MT state array 
 
 Challenge 24: Write the MT stream cipher and break it
 ---
-Writing the cipher: straightforward
-Breaking it: Not obvious but it turns out that 2^16 keys isn't that many keys, and testing them is very quick. So you can literally just test all the keys
+Writing the cipher: straightforward  
+Breaking it: Not obvious but it turns out that 2^16 keys isn't that many keys, and testing them is very quick. So you can literally just test all the keys  
 
 Very unclimactic....
 
