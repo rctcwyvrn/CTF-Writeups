@@ -475,6 +475,10 @@ Challenge 35: Again, do the math and figure out what the S is (or could be). Rem
 
 Challenge 36: Just follow the instructions. If you have no idea how to setup a login server like me then you want to use socketserver, look at my srp_server.py for details  
 
-Challenge 36: I don't know what they meant by &c either, maybe just a constant times n? You get the idea by now  
+Challenge 37: I don't know what they meant by &c either, maybe just a constant times n? You get the idea by now  
 
-Challenge 37: This one was weird, just a brute force attack using common words  
+Challenge 38: This one was weird, just a brute force attack using common words  
+
+Challenge 39: Use Crypto.Util.number to generate primes and do invmod
+
+Challenge 40: Mathematical basis of the black magic that is [the chinese remainder theorem](https://crypto.stanford.edu/pbc/notes/numbertheory/crt.html)
