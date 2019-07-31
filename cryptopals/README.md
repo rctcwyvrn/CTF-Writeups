@@ -481,4 +481,10 @@ Challenge 38: This one was weird, just a brute force attack using common words
 
 Challenge 39: Use Crypto.Util.number to generate primes and do invmod
 
-Challenge 40: Mathematical basis of the black magic that is [the chinese remainder theorem](https://crypto.stanford.edu/pbc/notes/numbertheory/crt.html)
+Challenge 40: Mathematical basis of the black magic that is [the chinese remainder theorem](https://crypto.stanford.edu/pbc/notes/numbertheory/crt.html). Basically what it does is provide a formula for finding an x that satisfies a set of modular equations like
+
+x = m^3 mod n0  
+x = m^3 mod n1  
+...  
+  
+So then that x must be equal to m^2 mod n0*n1*n2, so then we recover the message. My manual cube root function took absolutely forever so I just janked together a way to call sagemath
