@@ -1,6 +1,13 @@
 import random, hashlib, socket, sock_util
 from os import urandom
 import set_1,set_2, sha1, time
+from Crypto.Util import number
+import rsa_utils as rsa
+from decimal import * 
+import subprocess
+
+prec = 100000
+getcontext().prec = prec
 
 big_p = "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca237327ffffffffffffffff"
 big_p = int(big_p,16)
@@ -510,6 +517,101 @@ def simplified_srp_client():
 	client_HMAC  = sha256_HMAC(client_K,salt.to_bytes(32, byteorder='big'))
 	middle_attack(client_HMAC)
 
+def challenge39():
+	#print(modinv(17,3120))
+	r = rsa.rsa()
+
+	test = "unhappy"
+	#test = int.from_bytes(to_enc.encode('ascii'), byteorder = 'little')
+
+	enc = r.enc(test)
+	res = r.dec(enc)
+	assert(test == res)
+
+
+
+def cube_root(x):
+	e = 0.1
+	start = 0
+	end = x
+
+	while start < end:
+		mid = (start+end)/2
+		cube = pow(mid,3)
+		error = abs(x - cube)
+		#print(error)
+		if error <= e:
+			return mid 
+
+		if cube > x:
+			end = mid 
+		else:
+			start = mid + 1
+	return start
+
+def crt(residues,mods):
+	assert(len(residues) == len(mods))
+	bigN = Decimal(1)
+	for n in mods:
+		bigN = bigN * n
+
+	b = []
+	for n in mods:
+		s = 1
+		for m in mods:
+			if m != n:
+				s *=m
+		b.append(s) #division is extremely slow, so this is actually much faster
+
+	res = 0
+	for i in range(len(residues)):
+		res+= (residues[i] * b[i] * number.inverse(b[i],mods[i]))
+	return res % bigN
+
+def challenge40():
+	r1 = rsa.rsa()
+	r2 = rsa.rsa() #why is it an e=3 attack, why can't e be anything else?
+	r3 = rsa.rsa()
+
+	t = "HOLY FUCKING SHIT IT WORKS I CANT BELIEVE IT SO I'M GONNA GIVE IT A REALLY LONG MESSAGE AND SEE WHAT HAPPENS"
+	#t = "HOLY FUCK IT WORKS"
+
+	p0,n0 = r1.pubkey()
+	p1,n1 = r2.pubkey()
+	p2,n2 = r3.pubkey()
+
+	# print("n")
+	# print(n0)
+	# print(n1)
+	# print(n2)
+
+	#assert(p0 == p1 == p2 == 3) #does it even need to be 3?
+
+	c0 = r1.enc(t) # = m ** 3 mod n0
+	c1 = r2.enc(t) # = m ** 3 mod n1
+	c2 = r3.enc(t) # = m ** 3 mod n2
+
+	# print("c")
+	# print(c0)
+	# print(c1)
+	# print(c2)
+	#so crt then solves for m**3
+
+	result = crt([c0,c1,c2],[n0,n1,n2])
+	print("done crt, result = ",result)
+
+	f = open("cube_root_me.txt","w")
+	f.write(str(result))
+	f.close()
+
+	print("calling sage script")
+	subprocess.call("./dumb.sh")
+
+	# print("manual cube root")
+	# result = cube_root(result)
+	# print("cube rooted",result)
+	# print("message = ",number.long_to_bytes(result))
+
 def challenges():
 	#Challenge 33
 	#s = diffie_hellman()
@@ -531,7 +633,13 @@ def challenges():
 	#challenge_37() #remember to open the server
 
 	#Challenge 38
-	simplified_srp_client()
+	#simplified_srp_client()
+
+	#Challenge 39
+	#challenge39()
+
+	#Challenge 40
+	challenge40()
 #After way too many challenges I'm setting this up
 if __name__ == '__main__':
 	challenges()

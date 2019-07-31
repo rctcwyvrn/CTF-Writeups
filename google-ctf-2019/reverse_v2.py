@@ -95,6 +95,7 @@ def solve_and_fit(stuff):
 			to_test.append(m)
 	print(len(to_test))
 	return to_test
+	
 res = solve_and_fit([first,second,third,fourth,fifth,sixth])
 
 
@@ -106,34 +107,34 @@ for to_test in res:
 	if(next_state == init_state):
 		valid.append(to_test)
 
-print(valid)
-print(len(valid))
+#print(valid)
+print("number of valid solutions found=",len(valid))
 
-print(format(init_state))
-print(format(step_automata(valid[0])))
+# print(format(init_state))
+# print(format(step_automata(valid[0])))
 
 
-c = 0
-maybe_flag = []
-#subprocess.call(args, *, stdin=None, stdout=None, stderr=None, shell=False)
-for to_test in valid:
-#to_test = valid[0]
-	flag = "U2FsdGVkX18+Wl0awCH/gWgLGZC4NiCkrlpesuuX8E70tX8t/TAarSEHTnpY/C1D"
-	as_int = int(to_test,2)
-	hex_in = hex(as_int)
-	res = subprocess.call(["./automata_dec.sh",hex_in])
-	out = open("std_err.txt")
-	a = out.readline()
-	if a != "bad decrypt\n":
-		print("Maybe a flag?",a,c)
-		maybe_flag.append(c)
-		try:	
-			out = open("std_out.txt")
-			print(out.readlines())
-		except UnicodeDecodeError:
-			print("ignore")
-			#pass
-	c+=1
+# c = 0
+# maybe_flag = []
+# #subprocess.call(args, *, stdin=None, stdout=None, stderr=None, shell=False)
+# for to_test in valid:
+# #to_test = valid[0]
+# 	flag = "U2FsdGVkX18+Wl0awCH/gWgLGZC4NiCkrlpesuuX8E70tX8t/TAarSEHTnpY/C1D"
+# 	as_int = int(to_test,2)
+# 	hex_in = hex(as_int)
+# 	res = subprocess.call(["./automata_dec.sh",hex_in])
+# 	out = open("std_err.txt")
+# 	a = out.readline()
+# 	if a != "bad decrypt\n":
+# 		print("Maybe a flag?",a,c)
+# 		maybe_flag.append(c)
+# 		try:	
+# 			out = open("std_out.txt")
+# 			print(out.readlines())
+# 		except UnicodeDecodeError:
+# 			print("ignore")
+# 			#pass
+# 	c+=1
 
 #UnicodeDecodeError
 # echo "404c368b" > /tmp/plain.key; xxd -r -p /tmp/plain.key > /tmp/enc.key
