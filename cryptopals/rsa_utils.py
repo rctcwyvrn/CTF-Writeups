@@ -14,8 +14,8 @@ class rsa:
 			#q = number.getPrime(128)
 			#p = number.getStrongPrime(640)
 			#q = number.getStrongPrime(640)
-			p = number.getStrongPrime(1024)
-			q = number.getStrongPrime(1024)
+			p = number.getStrongPrime(512)
+			q = number.getStrongPrime(512)
 
 			n = p * q
 

@@ -7,10 +7,13 @@ q = int("f4f47f05794b256174bba6e9b396a7707e563c5b",16)
 g = int("""5958c9d3898b224b12672c0b98e06c60df923cb8bc999d119458fef538b8fa4046c8db53039db620c094c9fa077ef389b5322a559946a71903f990f1f7e0e025e2d7f7cf494aff1a0470f5b64c36b625a097f1651fe775323556fe00b3608c887892878480e99041be601a62166ca6894bdd41a7054ec89f756ba9fc95302291""",16)
 
 class dsa:
-     def __init__(self):
+     def __init__(self,p1=p,p2=q,p3=g):
+          self.p = p1
+          self.q = p2
+          self.g = p3
           #self.x = q // 3
           self.x = random.randint(1,q-1)
-          self.y = pow(g,self.x,p)
+          self.y = pow(p3,self.x,self.p)
           #print("myprivkey is ",self.x)
 
      def pubkey(self):
@@ -30,8 +33,8 @@ class dsa:
                     k = random.randint(1,q-1)
 
                     #k = q // 2
-                    r = pow(g,k,p) % q
-               s = (number.inverse(k,q) * (hash_int + self.x * r )) % q # requires privkey x
+                    r = pow(self.g,k,self.p) % self.q
+               s = (number.inverse(k,self.q) * (hash_int + self.x * r )) % self.q # requires privkey x
 
           return (r,s,k)
 
@@ -53,17 +56,16 @@ class dsa:
                return False
 
           w = number.inverse(s,q)
-          u1 = (hash_int * w) % q
-          u2 = (r * w) % q
+          u1 = (hash_int * w) % self.q
+          u2 = (r * w) % self.q
 
-          t1 = pow(g,u1,p)
-          t2 = pow(self.y,u2,p) #only needs pubkey y
+          t1 = pow(self.g,u1,self.p)
+          t2 = pow(self.y,u2,self.p) #only needs pubkey y
 
-          v = ((t1 * t2) % p ) % q
-          #v = ((pow(g,u1,p) * pow(self.y,u2,p)) % p) % q
-          #v = ((g ** u1 * self.y ** u2) % p )% q
+          v = ((t1 * t2) % self.p ) % self.q
+
           if v == r:
-               print("signature accepted")
+               print("Signature accepted. Message = {}".format(msg))
                return True
           else:
                print("failed, {} vs {}".format(v,s))

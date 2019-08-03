@@ -2,7 +2,7 @@ import rsa_utils as rsa
 import dsa_utils as dsa
 from Crypto.Util import number
 import set_5
-import binascii, hashlib
+import binascii, hashlib, base64, math
 from decimal import *
 
 r = None
@@ -246,9 +246,112 @@ def challenge44():
 
 	print("got em x = {}".format(x))
 
+def challenge45():
+	bad_dsa = dsa.dsa(p3 = dsa.p+1)
+	r,s = bad_dsa.sign(b'hello there')
+	print(r,s)
+	bad_dsa.verify((r,s),b'hello there')
+	y = bad_dsa.pubkey()
+	print("whats ur pubkey? Making sure its 1. y= {}".format(y)) #this is 1, youll see if you do the binomial expansion of (p+1) ** x mod p. Every term has a p except the constant term, which is 1
+	#Generate some magic signature
+
+	r = 1 #turns out theyre both just 1 lol
+	s = 1 #do the math and you'll see. z is arbitrary so z = 1 should work
+
+	#r is obviously 1 if you trace the first part of sign
+	#but I'm not sure why s is also always 1. If you follow their equations it makes sense, but I don't see if from sign()
+
+	bad_dsa.verify((r,s),b'hello there')
+	bad_dsa.verify((r,s),b'cya nerds')
+
+def rsa_parity_oracle(blob):
+	ptxt = r.dec(blob)
+
+	if isinstance(ptxt,str):
+		ptxt = ptxt.encode('utf-8')
+		ptxt = number.bytes_to_long(ptxt)
+
+	#ptxt is an int
+	bits = "{0:b}".format(ptxt)
+	return bits[-1] == "0"
+
+def challenge46():
+	c_odd = r.enc(111)
+	print(rsa_parity_oracle(c_odd))
+
+	c_even = r.enc(200)
+	print(rsa_parity_oracle(c_even))
+
+	goal = base64.b64decode("VGhhdCdzIHdoeSBJIGZvdW5kIHlvdSBkb24ndCBwbGF5IGFyb3VuZCB3aXRoIHRoZSBGdW5reSBDb2xkIE1lZGluYQ==")
+	#goal = """Somebody once told me the world is gonna roll me I ain't the sharpest tool in the shed""".encode('ascii')
+	#enc_goal = r.enc(int.from_bytes(goal,byteorder='big'))
+	enc_goal = r.enc(number.bytes_to_long(goal)) # should just be a big int
+
+
+	e,N = r.pubkey()
+
+	upper_bound = Decimal(N)
+	lower_bound = Decimal(0)
+
+	enc_two = pow(2,e,N)
+	count = int(math.ceil(math.log(N,2)))
+
+	getcontext().prec = count+10 #we need exactly count many bits of precisiom, i just added some more for lulz
+
+	for i in range(1,count):
+		#test = enc_bits[i:]
+		blob_test =  (enc_two ** i) * enc_goal #multiplies the ptxt by 2**i
+		diff = Decimal(N)/(2 ** i)
+
+		if rsa_parity_oracle(blob_test):
+			#even, so plaintext didn't wrap the modulus
+
+			#So ptxt is less than half of the modulus	
+			upper_bound-=diff
+
+		else:
+			lower_bound+=diff
+
+		# if lower_bound >= upper_bound:
+		# 	print("loop_count =",i)
+		# 	print("expected count =",count)
+		# 	break
+
+		print(number.long_to_bytes(upper_bound))
+		# j = count - i
+		# if j <= 86:
+		# 	print("{} cycles left, current ptxt = {}".format(j,number.long_to_bytes(upper_bound)[:86-j]))
+		# else:
+		# 	print(number.long_to_bytes(upper_bound))
+	#extend the original idea to higher powers, ie multiplying by 4
+	#case 1, wraps 0 times, parity is even, upper bound = n/4
+	#case 2, wraps 1 time, parity is odd, lower bound is n/4 and upper bound is n/2
+	#case 3, wraps 2 times, parity is even, lower bound is n/2 and the upper bound is 3n/4
+	#case 4, wraps 3 times, partiy is odd, lower bound is 3n/4
+
+	#We can determine which case it is by looking at the earlier ones, since this is a BST.
+	#Going left == parity is even, which decreases our upper bound by n/(2 ** i)
+	#Going right == parity is odd, which increases our lower bound by n/(2 ** i)
+
+	#Check for multiplying by 8. L = n/2, U = 3n/4 
+	#after multiplying, L = 4n, U = 6n, so it either wrapped 5 times or 4 tims
+	#if parity is even, then it wrapped an even number of times, so to less than 5 times, so the upper bound is decreased to 5n/8
+	#if parity is odd, then it wrapped around an odd number of times, to at least 5 times, so the lower bound is increased to 5n/8
+
+	#(L+U)/2 = (5/4)/2 = 5/8
+
+	#print(lower_bound,upper_bound)
+	#So at this point we're pretty sure the upper bound or lower bound is the plaintext
+	t1 = number.long_to_bytes(lower_bound)
+	t2 = number.long_to_bytes(upper_bound)
+
+	print("Recovered ptxt = ",t1.decode('ascii'))
+
+
+
 def challenges():
 	global r
-	#r = rsa.rsa(3)
+	r = rsa.rsa(3)
 
 
 	#Challenge 41
@@ -261,7 +364,13 @@ def challenges():
 	#challenge43()
 
 	#Challenge 44
-	challenge44()
+	#challenge44()
+
+	#Challenge 45
+	#challenge45()
+
+	#Challenge 46
+	challenge46()
 
 if __name__ == "__main__":
 	challenges()

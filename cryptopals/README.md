@@ -516,4 +516,40 @@ Challenge 44:
 ---
 Easy if you make sure to follow their advice, too easy. So let's derive the equation!
 
+Challenge 45: Bad parameters
+---
+Well that was quite straightforward. Very similar to the parameter tampering we did earlier in set 5.  
+  
+Spoiler alert: in the end you should find that r=1 and s=1 signs anything if the generator was set to p+1
 
+
+Challenge 46: Parity oracle attack
+---
+READ [THIS](http://secgroup.dais.unive.it/wp-content/uploads/2012/11/Practical-Padding-Oracle-Attacks-on-RSA.html)
+I completely did not understand the attack until I read this. The most helpful thing I found was to simply trace the math beyond just the first one to justify to myself what was happening.
+
+Idea:
+
+1. If we multiply the ciphertext by 2^(i*e)
+2. Then the decryption will result in ptxt*2^(i).
+3. Then from looking at the parity we can judge some properties of the ptxt, namely we can shift the upper and lower bounds on it
+  
+This is essentially a binary search. Each time we find a even parity we go left and can decrease the upper bound. Each time we find an odd parity we can go right and increase the lower bound
+  
+Here's some copy pasted comments from the code that I wrote when I was trying to figure things out:  
+```
+extend the original idea to higher powers, ie multiplying by 4
+case 1, wraps 0 times, parity is even, upper bound = n/4
+case 2, wraps 1 time, parity is odd, lower bound is n/4 and upper bound is n/2
+case 3, wraps 2 times, parity is even, lower bound is n/2 and the upper bound is 3n/4
+case 4, wraps 3 times, partiy is odd, lower bound is 3n/4 and the upper bound is still n
+  
+We can determine which case it is by looking at the earlier ones, since this is a BST.
+Going left == parity is even, which decreases our upper bound by n/(2 ** i)
+Going right == parity is odd, which increases our lower bound by n/(2 ** i)
+  
+Check for multiplying by 8. L = n/2, U = 3n/4 
+after multiplying, L = 4n, U = 6n, so it either wrapped 5 times or 4 tims
+if parity is even, then it wrapped an even number of times, so to less than 5 times, so the upper bound is decreased to 5n/8
+if parity is odd, then it wrapped around an odd number of times, to at least 5 times, so the lower bound is increased to 5n/8
+```

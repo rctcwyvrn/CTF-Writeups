@@ -163,7 +163,7 @@ def byte_at_a_time_simple():
 			for key,value in values.items():
 				#print(len(value))
 				if value == result:
-					print(key)
+					print(final)
 					final+=key
 	print(final)
 	return final
@@ -311,7 +311,7 @@ def one_byte_at_a_time_harder():
 		for key,value in values.items():
 			#print(len(value))
 			if value == result:
-				print(key)
+				print(final)
 				final+=key
 
 	#rest of the blocks are same as normal
@@ -329,7 +329,7 @@ def one_byte_at_a_time_harder():
 			for key,value in values.items():
 				#print(len(value))
 				if value == result:
-					print(key)
+					print(final)
 					final+=key
 	print(final)
 	return final
