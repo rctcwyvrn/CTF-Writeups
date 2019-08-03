@@ -1,4 +1,5 @@
 import rsa_utils as rsa
+import dsa_utils as dsa
 from Crypto.Util import number
 import set_5
 import binascii, hashlib
@@ -16,6 +17,7 @@ def oracle_dec(blob):
 		return r.dec(blob)
 	else:
 		print("Server: message already decrypted before")
+
 def challenge41():
 	c1 = oracle_enc("all your secrets belong to us")
 	print("result of test decryption, should be all your secrets belong to us : ",oracle_dec(c1))
@@ -61,7 +63,6 @@ def rsa_verify_signature(sig,msg):
 		i+=1
 
 	stuff = blocks[i+1:i+33]
-	#print("without padding",stuff)
 	sha = hashlib.sha256()
 	sha.update(msg)
 	msg_hash = sha.digest()
@@ -110,7 +111,7 @@ def forge_signature(message):
 			return None
 		#print(number.bytes_to_long(fake))
 		#print("cube root = ",set_5.cube_root(number.bytes_to_long(fake)))
-		#print("trying to find a nice cube")
+
 
 		fake_sig = set_5.cube_root(number.bytes_to_long(fake))
 		t = int(fake_sig)
@@ -121,7 +122,8 @@ def forge_signature(message):
 		len_diff = len(number.long_to_bytes(diff))
 
 		buffer_size+=16
-	print("signature has been forged, will decrypt to = {}".format(fake))
+	print("signature has been forged, will decrypt to = {}".format(number.long_to_bytes(fake_sig ** 3)))
+	print("Diff = {}, Space = {}".format(len_diff,space))
 	return int(fake_sig)
 
 def challenge42():
@@ -137,31 +139,129 @@ def challenge42():
 	fake_sig = forge_signature(message)
 	rsa_verify_signature(fake_sig, message)
 
+def extract_privkey(r,s,k,H,q):
+	x = (number.inverse(r,q) * (s*k -H)) % q
+	return x
 
-	#Goal
-	#b'\x08H4\xe7R\xd6\x8d@z\xcb\xd3\xb2\xd4\xb2&\xd1\xdc\xbf\x1c\x82\xa0\x06\x1a\x8dl\x81\xd8\x9d\x17\xa9\xb2\xc0'
-	#b'\x08H4\xe7R\xd6\x8d@z\xcb\xd3\xb2\xd54\xf9\x93K\x1d\xdc\x17\x00\xb2\xd8\n\xd3\x05\xcejq\xb6o\xf9'
-	#b'\x08H4\xe7R\xd6\x8d@z\xcb\xd3\xb2\xd4\xb2&\xd1\xdc\xbf\x1c\x82\xa0\x06\x1a\x901\xa7\xa9\x14\x14hI\xb8'
+def challenge43():
+	msg = b'somebody once told me'
+	d = dsa.dsa()
+	H = d.H(msg)
 
-	#gets messed up a bit because there isnt enogh garbagio and it ends up messing things up while trying to make a perfect cube
-	#b'\x08H4\xe7R\xd6\x8d@z\xcb\xd3\xb2\xd54\xf9\x93K\x1d\xdc\x17\x00\xb2\xd8\n\xd3\x05\xcejq\xb6o\xf9' 
-	#b'\x08H4\xe7R\xd6\x8d@z\xcb\xd3\xb2\xd4\xb2&\xd1\xdc\xbf,\xdfK.\x0b\x8e\x0f\x04\xde\xfb\xf9\x17\x90\x92'
-	#b'\x08H4\xe7R\xd6\x8d@z\xcb\xd3\xb2\xd4\xb2&\xd1\xdc\xbf\x1c\x82\xa0\x06\x1a\x901\xa7\xa9\x14\x14hI\xb8'
-	#b'\x08H4\xe7R\xd6\x8d@z\xcb\xd3\xb2\xd4\xb2&\xd1\xdc\xbf\x1c\x82\xa0\x06\x1a\x8dl\x81\xd8\x9d\x17\xa9\xb2\xc0' #with a total messagelen of 128
-	#Runs pretty quick too, just 31 seconds
-	#Nevermind its just cube
-	
+	r,s,k = d.sign_oops(msg)
+	#print(r,s,k)
+	#print("extracted private key",extract_privkey(r,s,k,H,dsa.q))
+
+# 	pub = """84ad4719d044495496a3201c8ff484feb45b962e7302e56a392aee4abab3e4bdebf2955b4736012f21a08084056b19bcd7fee56048e004e44984e2f411788efdc837a0d2e5abb7b555039fd243ac01f0fb2ed1dec568280ce678e931868d23eb095fde9d3779191b8c0299d6e07bbb283e6633451e535c45513b2d33c99ea17"""
+	#msg = """For those that envy a MC it can be hazardous to your health
+# So be friendly, a matter of life and death, just like a etch-a-sketch\n""".encode('ascii')
+	r,s,k = d.sign_oops(msg)
+	#print(r,s,k)
+	#print("extracted private key",extract_privkey(r,s,k,H,dsa.q))
+# 	print(msg)
+# 	h = hashlib.sha1()
+# 	h.update(msg)
+# 	print("string hash",h.hexdigest())
+	#d2d0714f014a9784047eaeccf956520045c45265
+	#d2d0714f014a9784047eaeccf956520045c45265 yeet
+
+
+	msgH = 0xd2d0714f014a9784047eaeccf956520045c45265
+	r = 548099063082341131477253921760299949438196259240
+	s = 857042759984254168557880549501802188789837994940
+	goal = "0954edd5e0afe5542a4adf012611a91912a3ec16"
+	y = int("84ad4719d044495496a3201c8ff484feb45b962e7302e56a392aee4"
+      "abab3e4bdebf2955b4736012f21a08084056b19bcd7fee56048e004"
+      "e44984e2f411788efdc837a0d2e5abb7b555039fd243ac01f0fb2ed"
+      "1dec568280ce678e931868d23eb095fde9d3779191b8c0299d6e07b"
+      "bb283e6633451e535c45513b2d33c99ea17",16)
+	for k in range(2**16):
+		x = extract_privkey(r,s,k,msgH,dsa.q)
+
+		#test_bytes = number.long_to_bytes(x)
+		test_bytes = hex(x)[2:].encode()
+		h = hashlib.sha1()
+		h.update(test_bytes)
+		hex_out = h.hexdigest()
+
+		# if len(hex_out) != len(goal):
+		# 	print("not right")
+		# 	break
+
+		if pow(dsa.g,x,dsa.p) == y:
+			print("private key x found, x= {}".format(x))
+			if hex_out == goal:
+				print("yay it works")
+			else:
+				print("why is converting ints to bytes the hardest part again...")
+			break
+
+def challenge44():
+	f = open("44.txt")
+	i = 0
+	msgs = []
+	ss = []
+	rs = []
+	ms = []
+	for line in f.readlines():
+		if i == 0:
+			msgs.append(line[:-2])
+		elif i == 1:
+			ss.append(int(line[3:]))
+		elif i == 2:
+			rs.append(int(line[3:]))
+		else:
+			ms.append(int(line.strip()[3:],16))
+
+		i+=1
+		i = i % 4
+	#print(msgs,ss,rs,ms)
+
+	#see if there are any duplicate r's because that would mean duplicate k
+
+	for i in range(len(rs)):
+		for j in range(len(rs)):
+			if i != j and rs[i] == rs[j]:
+				print("duplicate i={}, j={}".format(i,j))
+				found = True
+				break
+		if found:
+			break
+
+	# i = 2
+	# j = 10 also works!
+	m1 = ms[i]
+	s1 = ss[i]
+
+	m2 = ms[j]
+	s2 = ss[j]
+
+	k = (number.inverse((s1-s2)%dsa.q,dsa.q) * (m1-m2)) % dsa.q #yeet
+
+	x = extract_privkey(rs[i],ss[i],k,ms[i],dsa.q)
+
+	h = hashlib.sha1()
+	h.update(hex(x)[2:].encode())
+	assert(h.hexdigest() == "ca8f6f7c66fa362d40760d135b763eb8527d3d52")
+
+	print("got em x = {}".format(x))
 
 def challenges():
 	global r
-	r = rsa.rsa(3)
+	#r = rsa.rsa(3)
 
 
 	#Challenge 41
 	#challenge41()
 
 	#Challenge 42
-	challenge42()
+	#challenge42()
+
+	#Challenge 43
+	#challenge43()
+
+	#Challenge 44
+	challenge44()
 
 if __name__ == "__main__":
 	challenges()

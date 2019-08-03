@@ -487,4 +487,33 @@ x = m^3 mod n0
 x = m^3 mod n1  
 ...  
   
-So then that x must be equal to m^2 mod n0*n1*n2, so then we recover the message. My manual cube root function took absolutely forever so I just janked together a way to call sagemath
+So then that x must be equal to m^2 mod n0*n1*n2, so then we recover the message. ~My manual cube root function took absolutely forever so I just janked together a way to call sagemath~ got it working (read: stole someone else's code)
+
+
+Set 6 RSA and DSA
+===
+
+Challenge 41: Follow the instructions and you'll get there
+
+Challenge 42: The e=3 unpadded RSA attack
+---
+This one needs a bit more writeup, since there's some pitfalls here.
+
+1. Understand why this is an e=3 attack. (It's because then we can reliably fake a signature that won't wrap the modulus)
+2. Make sure you have efficient invmod and cube_root functions
+3. Understand why there needs to be garbage at the end of the forged signature. (It's because you're going to be cube rooting and rounding, and we don't want any changes to show up in the hash. If the bytes are big endian, where will be rounding errors appear? At the end, where we have our garbage that the signature verifier won't even check!)
+
+Challenge 43: DSA and bad nonces
+---
+Follow the instructions, be super careful with the DSA implementation. I ended up having to copy someone else's implementation in and check every step of the way that my values were correct. Turns out my mistake as comparing to s instead of r at the very end...
+
+Anyway get that working and make sure your way of converting integers to bytes is consistent with how they do it. Turns out mine wasn't...
+I was using number.long_to_bytes(x), they used hex(x)[2:].encode()
+
+The actual challenge isn't that hard, just extremely finicky.
+
+Challenge 44: 
+---
+Easy if you make sure to follow their advice, too easy. So let's derive the equation!
+
+
