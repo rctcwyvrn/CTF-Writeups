@@ -530,28 +530,43 @@ def challenge39():
 
 
 
-def cube_root(x):
-	e = 0.1
-	start = 0
-	end = x
+# def cube_root(x):
+# 	e = 0.1
+# 	start = 0
+# 	end = x
 
-	while start < end:
-		mid = (start+end)/2
-		cube = pow(mid,3)
-		error = abs(x - cube)
-		#print(error)
-		if error <= e:
-			return mid 
+# 	while start < end:
+# 		mid = (start+end)/2
+# 		cube = pow(mid,3)
+# 		error = abs(x - cube)
+# 		#print(error)
+# 		if error <= e:
+# 			return mid 
 
-		if cube > x:
-			end = mid 
+# 		if cube > x:
+# 			end = mid 
+# 		else:
+# 			start = mid + 1
+# 	return start
+
+def cube_root(n):
+	"""Finds the cube root of n using binary search."""
+	lo = 0
+	hi = n
+
+	while lo < hi:
+		mid = (lo + hi) // 2
+		if mid**3 < n:
+			lo = mid + 1
 		else:
-			start = mid + 1
-	return start
+			hi = mid
+
+	return lo
 
 def crt(residues,mods):
 	assert(len(residues) == len(mods))
-	bigN = Decimal(1)
+	#bigN = Decimal(1)
+	bigN = 1 #this works now and runs ike 10x faster lul
 	for n in mods:
 		bigN = bigN * n
 
@@ -561,7 +576,7 @@ def crt(residues,mods):
 		for m in mods:
 			if m != n:
 				s *=m
-		b.append(s) #division is extremely slow, so this is actually much faster
+		b.append(s) #division is extremely slow with the massive numbers we're working with, so this is actually much  much much faster
 
 	res = 0
 	for i in range(len(residues)):
@@ -569,12 +584,13 @@ def crt(residues,mods):
 	return res % bigN
 
 def challenge40():
-	r1 = rsa.rsa()
-	r2 = rsa.rsa() #why is it an e=3 attack, why can't e be anything else?
-	r3 = rsa.rsa()
+	r1 = rsa.rsa(3)
+	r2 = rsa.rsa(3) #why is it an e=3 attack, why can't e be anything else?
+	r3 = rsa.rsa(3)
 
-	t = "HOLY FUCKING SHIT IT WORKS I CANT BELIEVE IT SO I'M GONNA GIVE IT A REALLY LONG MESSAGE AND SEE WHAT HAPPENS"
+	#t = "HOLY FUCKING SHIT IT WORKS I CANT BELIEVE IT SO I'M GONNA GIVE IT A REALLY LONG MESSAGE AND SEE WHAT HAPPENS"
 	#t = "HOLY FUCK IT WORKS"
+	t = "maow"*20
 
 	p0,n0 = r1.pubkey()
 	p1,n1 = r2.pubkey()
@@ -600,17 +616,18 @@ def challenge40():
 	result = crt([c0,c1,c2],[n0,n1,n2])
 	print("done crt, result = ",result)
 
-	f = open("cube_root_me.txt","w")
-	f.write(str(result))
-	f.close()
+	# f = open("cube_root_me.txt","w") don'y need this nonsense anymore thank god
+	# f.write(str(result))
+	# f.close()
 
-	print("calling sage script")
-	subprocess.call("./dumb.sh")
+	# print("calling sage script")
+	# subprocess.call("./dumb.sh")
 
-	# print("manual cube root")
-	# result = cube_root(result)
-	# print("cube rooted",result)
-	# print("message = ",number.long_to_bytes(result))
+	print("manual cube root")
+	result = cube_root(result)
+	print("cube rooted",result)
+	print("message = ",number.long_to_bytes(result))
+
 
 def challenges():
 	#Challenge 33

@@ -44,7 +44,11 @@ class rsa:
 		val = pow(m, self.priv, self.n)
 		v = number.long_to_bytes(val)
 		#print("after",v)
-		return v.decode("utf-8")
+		try:
+			v = v.decode("utf-8")
+			return v 
+		except UnicodeDecodeError:
+			return val
 
 	def pubkey(self):
 		return (self.pub,self.n)

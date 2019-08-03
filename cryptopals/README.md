@@ -479,7 +479,7 @@ Challenge 37: I don't know what they meant by &c either, maybe just a constant t
 
 Challenge 38: This one was weird, just a brute force attack using common words  
 
-Challenge 39: Use Crypto.Util.number to generate primes and do invmod
+Challenge 39: Use Crypto.Util.number to generate primes and to do invmod
 
 Challenge 40: Mathematical basis of the black magic that is [the chinese remainder theorem](https://crypto.stanford.edu/pbc/notes/numbertheory/crt.html). Basically what it does is provide a formula for finding an x that satisfies a set of modular equations like
 
