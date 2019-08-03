@@ -590,7 +590,7 @@ def challenge40():
 
 	#t = "HOLY FUCKING SHIT IT WORKS I CANT BELIEVE IT SO I'M GONNA GIVE IT A REALLY LONG MESSAGE AND SEE WHAT HAPPENS"
 	#t = "HOLY FUCK IT WORKS"
-	t = "maow"*20
+	t = "maow"*50
 
 	p0,n0 = r1.pubkey()
 	p1,n1 = r2.pubkey()
