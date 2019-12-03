@@ -2,8 +2,10 @@ import rsa_utils as rsa
 import dsa_utils as dsa
 from Crypto.Util import number
 import set_5
-import binascii, hashlib, base64, math
+import binascii, hashlib, base64, math, os, random
 from decimal import *
+
+import multiprocessing, sys
 
 r = None
 old = []
@@ -203,6 +205,7 @@ def challenge44():
 	ss = []
 	rs = []
 	ms = []
+	
 	for line in f.readlines():
 		if i == 0:
 			msgs.append(line[:-2])
@@ -283,7 +286,10 @@ def challenge46():
 	print(rsa_parity_oracle(c_even))
 
 	goal = base64.b64decode("VGhhdCdzIHdoeSBJIGZvdW5kIHlvdSBkb24ndCBwbGF5IGFyb3VuZCB3aXRoIHRoZSBGdW5reSBDb2xkIE1lZGluYQ==")
-	#goal = """Somebody once told me the world is gonna roll me I ain't the sharpest tool in the shed""".encode('ascii')
+# 	goal = """Somebody once told me the world is gonna roll me
+# I ain't the sharpest tool in the shed
+# She was looking kind of dumb with her finger and her thumb
+# In the shape of an "L" on her forehead""".encode('ascii')
 	#enc_goal = r.enc(int.from_bytes(goal,byteorder='big'))
 	enc_goal = r.enc(number.bytes_to_long(goal)) # should just be a big int
 
@@ -296,20 +302,25 @@ def challenge46():
 	enc_two = pow(2,e,N)
 	count = int(math.ceil(math.log(N,2)))
 
+	diff = N
+
 	getcontext().prec = count+10 #we need exactly count many bits of precisiom, i just added some more for lulz
 
 	for i in range(1,count):
 		#test = enc_bits[i:]
 		blob_test =  (enc_two ** i) * enc_goal #multiplies the ptxt by 2**i
-		diff = Decimal(N)/(2 ** i)
+		#diff = Decimal(N)/(2 ** i)
+		diff = diff//2
 
 		if rsa_parity_oracle(blob_test):
 			#even, so plaintext didn't wrap the modulus
 
 			#So ptxt is less than half of the modulus	
+			print("yes")
 			upper_bound-=diff
 
 		else:
+			print("no")
 			lower_bound+=diff
 
 		# if lower_bound >= upper_bound:
@@ -317,7 +328,7 @@ def challenge46():
 		# 	print("expected count =",count)
 		# 	break
 
-		print(number.long_to_bytes(upper_bound))
+		#print("loop # {} out of {}: ".format(i,count),number.long_to_bytes(upper_bound))
 		# j = count - i
 		# if j <= 86:
 		# 	print("{} cycles left, current ptxt = {}".format(j,number.long_to_bytes(upper_bound)[:86-j]))
@@ -347,11 +358,375 @@ def challenge46():
 
 	print("Recovered ptxt = ",t1.decode('ascii'))
 
+class MessageTooLong(Exception):
+	pass
 
+#total_server_requests = 0
+server_lock = multiprocessing.Lock()
+
+def rsa_pad_enc(data):
+	k = len(number.long_to_bytes(r.pubkey()[1]))
+
+	if k - 3 - len(data) < 8:
+		print("message too long")
+		raise MessageTooLong
+
+	pad_str = os.urandom(k - 3 - len(data)) #pads the message up to the bytelen of the modulus, so the msg is exactly 1 modulus long
+	res =  b'\x00\x02' + pad_str + b'\x00' + data
+	x = number.bytes_to_long(res)
+	print(res,x)
+	print(len(res))
+	return r.enc(x), res
+
+#import time
+
+def rsa_padding_oracle(blob, counter):
+	x = r.dec(blob)
+	length = len(number.long_to_bytes(r.pubkey()[1]))
+	res = number.long_to_bytes(x,length)
+
+	global server_lock
+	server_lock.acquire()
+	counter.value += 1
+	#print("--- LOCKED total server requests = ", counter.value)
+	#time.sleep(0.5)
+	#print("--- server releasing lock")
+	server_lock.release()
+
+	return res[0] == 0 and res[1] == 2
+
+def multithread(q, lock , counter, c, e, n, conn):
+	print("Starting thread")
+	global to_test 
+	attempts = 0
+	while True:
+		
+
+		lock.acquire()
+		if q.empty():
+			print("--- adding new items")
+			for i in range(s, s + 10**4):
+				q.put(i)
+			print("Total requests made so far: ", counter.value)
+			print("--- done")
+		lock.release()
+
+		s = q.get()
+		#print("Testing s=",s)
+
+		attempts+=1
+		c_test = (c * pow(s,e,n)) % n
+		#print(c_test)
+		#print(to_test.qsize())
+		if attempts % 500 == 0:
+			print("this thread has made {} attempts".format(attempts))
+
+		if rsa_padding_oracle(c_test, counter):
+			lock.acquire()
+			print("Solution found! Clearing queue")
+
+			while not q.empty():
+				q.get()
+
+			q.put(s)
+			q.put(s)
+			q.put(s)
+			q.put(s)
+			q.put(s)
+			q.put(s)
+			q.put(s)
+			q.put(s)
+
+			conn.send(s)
+			conn.close()
+
+			print("found s = {}, exiting thread".format(s))
+			lock.release()
+			return
+		#else:
+			#to_test.put(s+8)
+
+def threaded_find_s(c, e, n, B, total_requests, start_val):
+	threads = []
+
+	print("preparing queue")
+	to_test = multiprocessing.Queue()
+	lock = multiprocessing.Lock()
+	for i in range(start_val, start_val + 10**4):
+		to_test.put(i)
+
+	parent_pipes = []
+	for i in range(1,9):
+		p_c, c_c = multiprocessing.Pipe()
+		parent_pipes.append(p_c)
+		t = multiprocessing.Process(target=multithread,args=[to_test, lock, total_requests, c,e,n,c_c])
+		t.start()
+		threads.append(t)
+
+	print("Created threads")
+	vals = []
+
+	for p_c in parent_pipes:
+		vals.append(p_c.recv())
+	print("joining threads")
+	for t in threads:
+		t.join()
+
+
+	assert(len(list(set(vals))) == 1)
+	s_1 = vals[0]
+	print("returned, and we found s=",s_1)
+	assert(rsa_padding_oracle((c*pow(s_1,e,n))%n, total_requests))
+
+	return s_1
+
+def ceil(a,b):
+	return (a+b-1) // b
+
+def narrow_solutions(M, s, B, n):
+	new_M = []
+	for (a,b) in M:
+		#print(a,b,s,B)
+		#print("new r range",math.ceil((a*s-3*B+1)/n), (b*s-2*B)//n + 1)
+		for r in range(ceil((a*s-3*B+1),n), (b*s-2*B)//n + 1):
+			#print("makingnew range from r = ",r)
+			new_a = ceil((2*B+r*n),s)
+
+			#new_b = math.floor((3*B-1+r*n)/s) #apparantely this one is less accurate
+			new_b = (3*B-1+r*n)//s
+
+			# if new_b_1 != new_b_2:
+			# 	print("waht the fuck")
+			# 	print(new_b_2 - new_b_1)
+			# 	print(new_b_1, new_b_2)
+			# 	sys.exit(1)
+
+			# else:
+			# 	new_b = new_b_1
+
+			new_M_pair = [0,0]
+
+			if new_a > a:
+				new_M_pair[0] = new_a 
+			else:
+				new_M_pair[0] = a
+
+			if new_b < b:
+				new_M_pair[1] = new_b
+			else:
+				new_M_pair[1] = b 
+
+			unique = True
+			for a_in,b_in in new_M:
+				if new_M_pair[0] == a_in and new_M_pair[1] == b_in:
+					unique = False
+					break
+
+			if unique:
+				new_M.append(new_M_pair)
+
+	#print("new M =",new_M)
+	print("Contains {} interval(s)".format(len(new_M)))
+	return new_M
+
+
+def rsa_pad_oracle_attack(c,rsa, multi=True):
+	total_requests = multiprocessing.Value("i",0)
+	e,n = rsa.pubkey()
+	k = len(number.long_to_bytes(n))
+
+	B = 2 ** (8 *(k-2)) #PKCS conformance of c' = c* s**(e) mod n implies 2B <= ms mod n <= 3B
+	#print(c)
+	#step 1: find a first s0
+
+	# for s in range(2,10**5):
+	# 	c_test = (c * (s**e) ) % n 
+	# 	#print("ctest:",s)
+	# 	if rsa_padding_oracle(c_test):
+	# 		print("found one!")
+	# 		c_0 = c_test
+	# 		M_0 = (2*B, 3*B-1)
+	# 		i = 1
+	# 		break
+
+	#We can ignore step 1 because c is already pkcs conforming
+
+	s = [1]
+	M = [(2*B, 3*B-1)]
+	i = 1
+
+	if not multi:
+		#print(c_0,M_0,i)
+		print("--- 2a")
+		found = False
+		for s_1 in range(ceil(n,(3*B)), n):
+			#print(s_1)
+			c_test = (c * pow(s_1,e,n) ) % n 
+			if rsa_padding_oracle(c_test, total_requests):
+				found = True
+				break
+			if total_requests % 1000 == 0:
+				print("attempts in this 2a =",total_requests.value)
+
+		if found:
+			s.append(s_1)
+			print("new s_i=",s_1)
+		else:
+			print("fak")
+			sys.exit(1)
+	else:
+		print("--- mulithreaded 2a")
+		s_1 = threaded_find_s(c, e, n, B, total_requests, ceil(n,3*B))
+		s.append(s_1)
+
+	last_diff = M[0][1] - M[0][0]
+
+	#Step 3
+	print("narrowing solutions for i=1")
+	M = narrow_solutions(M, s_1, B, n)
+
+	count = 0
+
+	print("Entering search loop")
+	while(count <= 10**6):
+		print("# of iterations so far = ",count)
+		print("# of requests made to server = ",total_requests.value)
+		#Step 2b and 2c
+		if len(M) > 1:
+
+			if not multi:
+				found = False
+				print("--- 2b")
+				attempts = 0
+				#print(s,s[-1])
+				for s_i in range(s[-1]+1, n):
+
+					c_test = (c * pow(s_i,e,n) ) % n 
+					attempts+=1
+
+					if attempts % 1000 == 0:
+						print("{} attempts in this 2b".format(attempts))
+
+					if rsa_padding_oracle(c_test, total_requests):
+						found = True
+						break
+
+				if found:
+					print("Found new s_i=", s_i)
+					s.append(s_i)
+				else:
+					print("fak")
+					sys.exit(1)
+			else:
+				print("--- multithreaded 2b")
+				s_i = threaded_find_s(c, e, n, B, total_requests, s[-1]+1)
+				s.append(s_i)
+		else:
+			found = False
+			print("--- 2c")
+			a,b = M[0]
+			relative = (b-a)/last_diff
+
+			print("interval diff relative to last = {}".format(relative))
+			#print("diff = ",b-a)
+			print("log diff = ",math.log(b-a))
+
+			if relative > 1 or b < a:
+				print("fak")
+				sys.exit(1)
+
+			last_diff = b-a
+			attempts = 0
+
+
+			r = ceil(2*(b*s[-1] - 2*B),n)
+			s_i = ceil((2*B + r*n),b)
+
+			while True:
+
+				c_test = (c* pow(s_i,e,n)) % n 
+				attempts+=1
+
+				if attempts % 50000 == 0:
+					print("Attempts in this 2c = ",attempts)
+
+				if rsa_padding_oracle(c_test, total_requests):
+					found = True
+					break
+
+				if(s_i > (3*B+r*n)//a):
+					r+=1
+					s_i = ceil((2*B + r*n),b)
+					#print("new r")
+				else:
+					s_i +=1
+
+			print("total attempts=",attempts)
+			if found:
+				#print("Found new s_i=", s_i)
+				s.append(s_i)
+				if s_i < 0:
+					print("fak bad solution")
+					sys.exit(1)
+			else:
+				print("fak")
+				sys.exit(1)
+
+		#Step 3
+		print("--- 3")
+		print("narrowing solutions")
+		M = narrow_solutions(M, s_i, B, n)
+
+		if len(M) == 1 and (M[0][1] - M[0][0] == 0):
+			#print(M)
+			break
+
+		count+=1
+
+	print("Done!")
+	global total_server_requests
+	print("Total # of requests to server = ", total_requests.value)
+	print(b'\x00'+number.long_to_bytes(M[0][0]))
+	return b'\x00'+number.long_to_bytes(M[0][0])
+
+
+def challenge47():
+	global r 
+	r = rsa.rsa(11, True)
+
+	try:
+		x,m = rsa_pad_enc(b"kick it, CC")
+	except MessageTooLong:
+		print(":c")
+		return
+
+	#print("oracle says",rsa_padding_oracle(x))
+	#print("oracle says",rsa_padding_oracle(2))
+
+	rsa_pad_oracle_attack(x,r,True)
+	print(m)
+
+def challenge48():
+	#same code, since I implemented the full algorithm in challenge 47
+	global r 
+	r = rsa.rsa(11, False)
+
+	try:
+		x,m = rsa_pad_enc(b"kick it, CC")
+	except MessageTooLong:
+		print(":c")
+		return
+
+	#print("oracle says",rsa_padding_oracle(x))
+	#print("oracle says",rsa_padding_oracle(2))
+
+	result = rsa_pad_oracle_attack(x,r,True)
+	print(m)
+	print("Are they equal? ", result == m)
 
 def challenges():
 	global r
-	r = rsa.rsa(3)
+	r = rsa.rsa(65537)
 
 
 	#Challenge 41
@@ -370,7 +745,13 @@ def challenges():
 	#challenge45()
 
 	#Challenge 46
-	challenge46()
+	#challenge46()
+
+	#Challenge 47
+	#challenge47()
+
+	#Challenge 48
+	challenge48()
 
 if __name__ == "__main__":
 	challenges()

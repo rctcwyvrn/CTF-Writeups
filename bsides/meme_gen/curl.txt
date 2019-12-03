@@ -1,0 +1,18 @@
+curl -XPOST -F command="ls | cat" -F signature="644ed36bfe8f4d66959844dfeb2cd9344363c61978183ed50b567a309b3fd8485b526ebbcc629745f15a4e1373b5ed444e9e2f04646cd1c5ff3acce109219ed0d97a493ebca6d19016c3a63e3d0e7c9e628d8cdef612915a0be2f693398052eaa0532f92e4c6f27261f6cf9aa794a8e3f0315ea150dcdbec0788e1037722d067" http://memegen.area52.airforce:5000/api/run_command
+
+curl -XPOST -F command="ls|cat" -F signature="0c52d6c405f8786251832ece8a9b547930351ad572a5ec011937c54199a93ecebaa54cf812fc804490036101a588ab557f0eca0fe5c516c2e9660e939753e1c7690672ee79d09c2778dd9fa028c856f4123f89556a82887b3a9cb6c6abe1d27e2b12032ebce6689ce9a488bf79a230e1538d9ec397fbd58af095247b7b9cba32" http://localhost:5000/api/run_command
+
+
+4b6db7da77f3b17af25d10d4433bc4c257ccc18ca4220ef73af34ef73be123603c986a9eef3e147edabef67325b42a7e1fa8640d2eadbf3c5ddec715aaf1097219b6e3540d7b1c5cfc14469973d8705d41112b96b1c6b3a1559df9953fe1659469e03416268a65c6b78678a1f30ff96870e9b709b3bfbb4998eba3a84fe72788
+
+convert womancat.jpg \( -pointsize 40 -size 504x -gravity Center caption:abiq caption:abiq +append \) -gravity Center -append png:-
+convert womancat.jpg \( -pointsize 40 -size 504x -gravity Center caption:abiq caption:abiq +append \) -gravity Center -append png:-
+
+Y3VybC50eHQKbWVtZV9zZXJ2ZXIucHkKX19weWNhY2hlX18KcmVxdWlyZW1lbnRzLnR4dApyZXMudHh0CnJzYS5weQpzb2x2ZS5weQp0ZW1wbGF0ZXMKd29tYW5jYXQuanBnCg==
+
+
+
+
+
+curl -XPOST -F command="ls | xargs cat; aeUIfk" -F signature="b6748615a593791da57114e67888536aaef70693dff5f9b42042f180fc2746cbf6ab77a426f04b765e859a23cc00d85ba4c22e8fd13112c8a51ce02e2aea3f73cd86263e49c74852d00a292ecbf6ece16a6a3a1baa8a244dc19bc0c337d94d98adbd42e70beb21606f7b33982d6803309f15f797693e893a798714581e30924d" http://memegen.area52.airforce:5000/api/run_command
+

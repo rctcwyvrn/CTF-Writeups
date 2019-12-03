@@ -538,7 +538,7 @@ This is essentially a binary search. Each time we find a even parity we go left 
   
 Here's some copy pasted comments from the code that I wrote when I was trying to figure things out:  
 ```
-extend the original idea to higher powers, ie multiplying by 4
+Extend the original idea to higher powers, ie multiplying by 4
 case 1, wraps 0 times, parity is even, upper bound = n/4
 case 2, wraps 1 time, parity is odd, lower bound is n/4 and upper bound is n/2
 case 3, wraps 2 times, parity is even, lower bound is n/2 and the upper bound is 3n/4
@@ -548,8 +548,9 @@ We can determine which case it is by looking at the earlier ones, since this is 
 Going left == parity is even, which decreases our upper bound by n/(2 ** i)
 Going right == parity is odd, which increases our lower bound by n/(2 ** i)
   
-Check for multiplying by 8. L = n/2, U = 3n/4 
-after multiplying, L = 4n, U = 6n, so it either wrapped 5 times or 4 tims
+Sanity check: Check case for multiplying by 8 when L = n/2, U = 3n/4 
+after multiplying, L = 4n, U = 6n, so it either wrapped 5 times or 4 times
 if parity is even, then it wrapped an even number of times, so to less than 5 times, so the upper bound is decreased to 5n/8
 if parity is odd, then it wrapped around an odd number of times, to at least 5 times, so the lower bound is increased to 5n/8
+Diff in both cases was n/8
 ```

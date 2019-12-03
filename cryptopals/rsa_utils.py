@@ -7,15 +7,17 @@ def rsa_crypt(key,val,n):
 	return pow(val,key,n)
 
 class rsa:
-	def __init__(self,e=3):
+	def __init__(self,e=3, small = False):
 		good = False
 		while not good:
-			#p = number.getPrime(128)
-			#q = number.getPrime(128)
-			#p = number.getStrongPrime(640)
-			#q = number.getStrongPrime(640)
-			p = number.getStrongPrime(512)
-			q = number.getStrongPrime(512)
+			if small:
+				p = number.getPrime(128)
+				q = number.getPrime(128)
+			else:
+				p = number.getStrongPrime(1024)
+				q = number.getStrongPrime(1024)
+				#p = number.getStrongPrime(512)
+				#q = number.getStrongPrime(512)
 
 			n = p * q
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Meme Generator</title>
+  </head>
+  <body>
+    <h1>Meme Generator</h1>
+
+    <form action="/" method="get">
+      <p>
+        <input type="text" name="left" value="{{ left }}" placeholder="Left text" size="49">
+        <input type="text" name="right" value="{{ right }}" placeholder="Right text" size="49">
+        <button type="submit">Generate</button>
+      </p>
+    </form>
+
+    {% if left and right %}
+      <script data-command="{{ command }}" data-signature="{{ signature }}">
+        const command = encodeURIComponent(document.currentScript.dataset.command);
+        const signature = encodeURIComponent(document.currentScript.dataset.signature);
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            const result = document.getElementById("result");
+            const img = document.createElement("img");
+            img.setAttribute("src", this.responseText);
+            result.appendChild(img);
+          }
+        };
+        xhttp.open("POST", "/api/run_command", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send(`command=${command}&signature=${signature}`);
+      </script>
+
+      <div id="result"></div>
+    {% endif %}
+  </body>
+</html>
