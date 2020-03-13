@@ -1,0 +1,3 @@
+[submodule "utctf/galois/nonce-disrespect"]
+	path = utctf/galois/nonce-disrespect
+	url = https://github.com/nonce-disrespect/nonce-disrespect.git

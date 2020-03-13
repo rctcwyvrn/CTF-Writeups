@@ -66,6 +66,7 @@ def aes_cbc_mode_enc(in_bytes, IV, key):
 	out = b''
 	for block in blocks:
 		last = aes_block_enc(set_1.fixed_xor(block,IV),key)
+		print("next cbc block=",last)
 		IV = last
 		out +=last
 	return out
