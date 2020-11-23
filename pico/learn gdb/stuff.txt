@@ -1,5 +1,0 @@
-set a breakpoint at *0x40090a, which is after the call to decrpyt flag()
-
-then just call printf "%s", (char *) flag_buf
-
-picoCTF{gDb_iS_sUp3r_u53fuL_efaa2b29}
